@@ -1,0 +1,93 @@
+# 🛒 Shopper Spectrum Project – Full Code (Google Colab + Streamlit)
+# Includes: EDA, Unsupervised Learning (Clustering), and Product Recommendation System
+
+# ----------------------------------------
+# 🔧 Step 1: Install Streamlit and Pyngrok (Run in Colab)
+!pip install -q streamlit pyngrok
+
+# ----------------------------------------
+# 📝 Step 2: Save Streamlit App Code to File
+import streamlit as st
+import pandas as pd
+import numpy as np
+import pickle
+
+# Load models and data
+with open('rfm_kmeans_model.pkl', 'rb') as f:
+    kmeans = pickle.load(f)
+with open('scaler.pkl', 'rb') as f:
+    scaler = pickle.load(f)
+with open('cosine_similarity.pkl', 'rb') as f:
+    cosine_sim = pickle.load(f)
+with open('user_item_columns.pkl', 'rb') as f:
+    product_codes = pickle.load(f)
+with open('product_lookup.pkl', 'rb') as f:
+    product_lookup = pickle.load(f)
+
+# --- Functions ---
+def get_similar_products(product_code, top_n=5):
+    if product_code not in product_codes:
+        return []
+    idx = product_codes.index(product_code)
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:top_n+1]
+    similar_codes = [product_codes[i] for i, _ in sim_scores]
+    return [(code, product_lookup.get(code, 'Unknown')) for code in similar_codes]
+
+def predict_cluster(r, f, m):
+    input_data = scaler.transform([[r, f, m]])
+    label = kmeans.predict(input_data)[0]
+    cluster_map = {
+        0: 'High-Value',
+        1: 'Regular',
+        2: 'Occasional',
+        3: 'At-Risk'
+    }
+    return cluster_map.get(label, 'Unknown')
+
+# --- Streamlit UI ---
+st.set_page_config(page_title="Shopper Spectrum", layout="wide")
+st.title("🛒 Shopper Spectrum: E-Commerce Customer Intelligence")
+
+st.markdown("---")
+tabs = st.tabs(["🎯 Product Recommendation", "📊 Customer Segmentation"])
+
+# --- Tab 1: Product Recommendation ---
+with tabs[0]:
+    st.header("🎯 Product Recommendation")
+    product_name_input = st.text_input("Enter product name (partial or full):")
+    if product_name_input:
+        matched = [(code, name) for code, name in product_lookup.items() if product_name_input.lower() in name.lower()]
+        if matched:
+            selected_code, selected_name = matched[0]
+            st.markdown(f"**Top 5 recommendations for:** `{selected_name}`")
+            recommendations = get_similar_products(selected_code)
+            for code, name in recommendations:
+                st.markdown(f"- {name} ({code})")
+        else:
+            st.warning("No matching product found.")
+
+# --- Tab 2: Customer Segmentation ---
+with tabs[1]:
+    st.header("📊 Customer Segmentation")
+    recency = st.number_input("Recency (days since last purchase)", min_value=0, step=1)
+    frequency = st.number_input("Frequency (number of purchases)", min_value=0, step=1)
+    monetary = st.number_input("Monetary (total amount spent)", min_value=0.0, step=1.0)
+
+    if st.button("Predict Segment"):
+        result = predict_cluster(recency, frequency, monetary)
+        st.success(f"Predicted Segment: **{result}**")
+
+st.markdown("---")
+st.caption("Developed for Customer Segmentation and E-Commerce Recommendations")
+
+
+with open("app.py", "w") as f:
+    f.write(code)
+
+# ----------------------------------------
+# 🚀 Step 3: Run Streamlit App via Pyngrok
+from pyngrok import ngrok
+public_url = ngrok.connect(port=8501)
+print(f"🌐 Your Streamlit app is live at: {public_url}")
+!streamlit run app.py &> /dev/null &
