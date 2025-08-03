@@ -1,12 +1,12 @@
-# 🛒 Shopper Spectrum Project – Full Code (Google Colab + Streamlit)
+#  Shopper Spectrum Project – Full Code (Google Colab + Streamlit)
 # Includes: EDA, Unsupervised Learning (Clustering), and Product Recommendation System
 
 # ----------------------------------------
-# 🔧 Step 1: Install Streamlit and Pyngrok (Run in Colab)
+#  Step 1: Install Streamlit and Pyngrok (Run in Colab)
 !pip install -q streamlit pyngrok
 
 # ----------------------------------------
-# 📝 Step 2: Save Streamlit App Code to File
+#  Step 2: Save Streamlit App Code to File
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -47,14 +47,14 @@ def predict_cluster(r, f, m):
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="Shopper Spectrum", layout="wide")
-st.title("🛒 Shopper Spectrum: E-Commerce Customer Intelligence")
+st.title(" Shopper Spectrum: E-Commerce Customer Intelligence")
 
 st.markdown("---")
-tabs = st.tabs(["🎯 Product Recommendation", "📊 Customer Segmentation"])
+tabs = st.tabs([" Product Recommendation", " Customer Segmentation"])
 
 # --- Tab 1: Product Recommendation ---
 with tabs[0]:
-    st.header("🎯 Product Recommendation")
+    st.header(" Product Recommendation")
     product_name_input = st.text_input("Enter product name (partial or full):")
     if product_name_input:
         matched = [(code, name) for code, name in product_lookup.items() if product_name_input.lower() in name.lower()]
@@ -69,7 +69,7 @@ with tabs[0]:
 
 # --- Tab 2: Customer Segmentation ---
 with tabs[1]:
-    st.header("📊 Customer Segmentation")
+    st.header(" Customer Segmentation")
     recency = st.number_input("Recency (days since last purchase)", min_value=0, step=1)
     frequency = st.number_input("Frequency (number of purchases)", min_value=0, step=1)
     monetary = st.number_input("Monetary (total amount spent)", min_value=0.0, step=1.0)
@@ -86,8 +86,8 @@ with open("app.py", "w") as f:
     f.write(code)
 
 # ----------------------------------------
-# 🚀 Step 3: Run Streamlit App via Pyngrok
+#  Step 3: Run Streamlit App via Pyngrok
 from pyngrok import ngrok
 public_url = ngrok.connect(port=8501)
-print(f"🌐 Your Streamlit app is live at: {public_url}")
+print(f"Your Streamlit app is live at: {public_url}")
 !streamlit run app.py &> /dev/null &
